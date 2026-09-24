@@ -15,12 +15,7 @@ def extract_info_from_pdf(pdf_file):
     text = ""
     with pdfplumber.open(pdf_file) as pdf:
         for page in pdf.pages:
-            extracted = page.extract_text()
-            if extracted:
-                text += extracted + "\n"
-    
-    # Hiển thị thử văn bản máy đọc được ra giao diện (để bắt bệnh)
-    st.text_area("Văn bản máy tính đọc được từ PDF:", text, height=150)
+            text += page.extract_text() + "\n"
     
     data = {
         "ten": "Không tìm thấy",
@@ -30,28 +25,28 @@ def extract_info_from_pdf(pdf_file):
         "dien_tich_chuyen": "Không tìm thấy"
     }
     
-    # NÂNG CẤP BỘ LỌC: Bỏ qua khoảng trắng, dấu xuống dòng (\n) và dấu chấm (\.)
     match_ten = re.search(r'Tên:\s*(Ông|Bà)?\s*([A-ZÀ-Ỹa-zà-ỹ\s]+)', text)
     if match_ten:
         data["ten"] = match_ten.group(2).strip()
         
-    match_cccd = re.search(r'CCCD[\s\:\.]*(\d+)', text)
+    match_cccd = re.search(r'CCCD\s*(\d+)', text)
     if match_cccd:
         data["cccd"] = match_cccd.group(1)
         
-    match_thua = re.search(r'Thửa đất số:[\s\n\.]*(\d+)', text)
+    match_thua = re.search(r'Thửa đất số:\s*(\d+)', text)
     if match_thua:
         data["thua_dat"] = match_thua.group(1)
         
-    match_bando = re.search(r'Tờ bản đồ số:[\s\n\.]*(\d+)', text)
+    match_bando = re.search(r'Tờ bản đồ số:.*?(\d+)', text)
     if match_bando:
         data["to_ban_do"] = match_bando.group(1)
         
-    match_dt = re.search(r'Diện tích chuyển mục đích sử dụng đất:[\s\n\.]*([\d\,]+)', text)
+    match_dt = re.search(r'Diện tích chuyển mục đích sử dụng đất:.*?([\d\,]+)', text)
     if match_dt:
         data["dien_tich_chuyen"] = match_dt.group(1)
         
     return data
+
 # --- GIAO DIỆN WEB ---
 # Thêm accept_multiple_files=True để cho phép bôi đen chọn nhiều file PDF
 uploaded_pdfs = st.file_uploader("1. Tải lên CÁC file PDF hồ sơ", type=["pdf"], accept_multiple_files=True)
